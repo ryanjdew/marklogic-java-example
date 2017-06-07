@@ -1,6 +1,6 @@
 package com.mycompany.app.pojos;
 
-import  java.util.List;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,237 +11,228 @@ import com.marklogic.client.pojo.annotation.Id;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonRootName("person")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Person { 
-  @JsonProperty("_id")
-  @Id
-  public String _id;
-  @JsonProperty("index")
-  public Double index;
-  @JsonProperty("guid")
-  public String guid;
-  @JsonProperty("isActive")
-  public Boolean isActive;
-  @JsonProperty("balance")
-  public String balance;
-  @JsonProperty("picture")
-  public String picture;
-  @JsonProperty("age")
-  public Double age;
-  @JsonProperty("eyeColor")
-  public String eyeColor;
-  @JsonProperty("name")
-  public String name;
-  @JsonProperty("gender")
-  public String gender;
-  @JsonProperty("company")
-  public String company;
-  @JsonProperty("email")
-  public String email;
-  @JsonProperty("phone")
-  public String phone;
-  @JsonProperty("address")
-  public String address;
-  @JsonProperty("about")
-  public String about;
-  @JsonProperty("registered")
-  public String registered;
-  @JsonProperty("latitude")
-  public Double latitude;
-  @JsonProperty("longitude")
-  public Double longitude;
-  @JsonProperty("tags")
-  public List<String> tags;
-  @JsonProperty("greeting")
-  public String greeting;
-  @JsonProperty("favoriteFruit")
-  public String favoriteFruit;
+public class Person {
+	@JsonProperty("_id")
+	@Id
+	public String _id;
+	@JsonProperty("index")
+	public Double index;
+	@JsonProperty("guid")
+	public String guid;
+	@JsonProperty("isActive")
+	public Boolean isActive;
+	@JsonProperty("balance")
+	public String balance;
+	@JsonProperty("picture")
+	public String picture;
+	@JsonProperty("age")
+	public Double age;
+	@JsonProperty("eyeColor")
+	public String eyeColor;
+	@JsonProperty("givenName")
+	public String givenName;
+	@JsonProperty("surname")
+	public String surname;
+	@JsonProperty("gender")
+	public String gender;
+	@JsonProperty("company")
+	public String company;
+	@JsonProperty("email")
+	public String email;
+	@JsonProperty("phone")
+	public String phone;
+	@JsonProperty("address")
+	public String address;
+	@JsonProperty("about")
+	public String about;
+	@JsonProperty("registered")
+	public String registered;
+	@JsonProperty("latitude")
+	public Double latitude;
+	@JsonProperty("longitude")
+	public Double longitude;
+	@JsonProperty("tags")
+	public List<String> tags;
+	@JsonProperty("greeting")
+	public String greeting;
+	@JsonProperty("favoriteFruit")
+	public String favoriteFruit;
 
-  public String get_id() { 
-    return this._id; 
-  }
+	public String get_id() {
+		return this._id;
+	}
 
-  public void set_id(String _id) { 
-    this._id = _id; 
-  }
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
+	public Double getIndex() {
+		return this.index;
+	}
 
-  public Double getIndex() { 
-    return this.index; 
-  }
+	public void setIndex(Double index) {
+		this.index = index;
+	}
 
-  public void setIndex(Double index) { 
-    this.index = index; 
-  }
+	public String getGuid() {
+		return this.guid;
+	}
 
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
 
-  public String getGuid() { 
-    return this.guid; 
-  }
+	public Boolean getIsActive() {
+		return this.isActive;
+	}
 
-  public void setGuid(String guid) { 
-    this.guid = guid; 
-  }
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
 
+	public String getBalance() {
+		return this.balance;
+	}
 
-  public Boolean getIsActive() { 
-    return this.isActive; 
-  }
+	public void setBalance(String balance) {
+		this.balance = balance;
+	}
 
-  public void setIsActive(Boolean isActive) { 
-    this.isActive = isActive; 
-  }
+	public String getPicture() {
+		return this.picture;
+	}
 
+	public void setPicture(String picture) {
+		this.picture = picture;
+	}
 
-  public String getBalance() { 
-    return this.balance; 
-  }
+	public Double getAge() {
+		return this.age;
+	}
 
-  public void setBalance(String balance) { 
-    this.balance = balance; 
-  }
+	public void setAge(Double age) {
+		this.age = age;
+	}
 
+	public String getEyeColor() {
+		return this.eyeColor;
+	}
 
-  public String getPicture() { 
-    return this.picture; 
-  }
+	public void setEyeColor(String eyeColor) {
+		this.eyeColor = eyeColor;
+	}
 
-  public void setPicture(String picture) { 
-    this.picture = picture; 
-  }
+	public String getGivenName() {
+		return this.givenName;
+	}
 
+	public String getSurname() {
 
-  public Double getAge() { 
-    return this.age; 
-  }
+		return this.surname;
+	}
 
-  public void setAge(Double age) { 
-    this.age = age; 
-  }
+	public void setGivenName(String givenName) {
+		this.givenName = givenName;
+	}
 
+	public void setSurname(String surname) {
+		this.surname = surname;
+	}
 
-  public String getEyeColor() { 
-    return this.eyeColor; 
-  }
+	public String getGender() {
+		return this.gender;
+	}
 
-  public void setEyeColor(String eyeColor) { 
-    this.eyeColor = eyeColor; 
-  }
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
 
+	public String getCompany() {
+		return this.company;
+	}
 
-  public String getName() { 
-    return this.name; 
-  }
+	public void setCompany(String company) {
+		this.company = company;
+	}
 
-  public void setName(String name) { 
-    this.name = name; 
-  }
+	public String getEmail() {
+		return this.email;
+	}
 
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-  public String getGender() { 
-    return this.gender; 
-  }
+	public String getPhone() {
+		return this.phone;
+	}
 
-  public void setGender(String gender) { 
-    this.gender = gender; 
-  }
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 
+	public String getAddress() {
+		return this.address;
+	}
 
-  public String getCompany() { 
-    return this.company; 
-  }
+	public void setAddress(String address) {
+		this.address = address;
+	}
 
-  public void setCompany(String company) { 
-    this.company = company; 
-  }
+	public String getAbout() {
+		return this.about;
+	}
 
+	public void setAbout(String about) {
+		this.about = about;
+	}
 
-  public String getEmail() { 
-    return this.email; 
-  }
+	public String getRegistered() {
+		return this.registered;
+	}
 
-  public void setEmail(String email) { 
-    this.email = email; 
-  }
+	public void setRegistered(String registered) {
+		this.registered = registered;
+	}
 
+	public Double getLatitude() {
+		return this.latitude;
+	}
 
-  public String getPhone() { 
-    return this.phone; 
-  }
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
 
-  public void setPhone(String phone) { 
-    this.phone = phone; 
-  }
+	public Double getLongitude() {
+		return this.longitude;
+	}
 
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
 
-  public String getAddress() { 
-    return this.address; 
-  }
+	public List<String> getTags() {
+		return this.tags;
+	}
 
-  public void setAddress(String address) { 
-    this.address = address; 
-  }
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
 
+	public String getGreeting() {
+		return this.greeting;
+	}
 
-  public String getAbout() { 
-    return this.about; 
-  }
+	public void setGreeting(String greeting) {
+		this.greeting = greeting;
+	}
 
-  public void setAbout(String about) { 
-    this.about = about; 
-  }
+	public String getFavoriteFruit() {
+		return this.favoriteFruit;
+	}
 
-
-  public String getRegistered() { 
-    return this.registered; 
-  }
-
-  public void setRegistered(String registered) { 
-    this.registered = registered; 
-  }
-
-
-  public Double getLatitude() { 
-    return this.latitude; 
-  }
-
-  public void setLatitude(Double latitude) { 
-    this.latitude = latitude; 
-  }
-
-
-  public Double getLongitude() { 
-    return this.longitude; 
-  }
-
-  public void setLongitude(Double longitude) { 
-    this.longitude = longitude; 
-  }
-
-
-  public List<String> getTags() { 
-    return this.tags; 
-  }
-
-  public void setTags(List<String> tags) { 
-    this.tags = tags; 
-  }
-
-
-  public String getGreeting() { 
-    return this.greeting; 
-  }
-
-  public void setGreeting(String greeting) { 
-    this.greeting = greeting; 
-  }
-
-
-  public String getFavoriteFruit() { 
-    return this.favoriteFruit; 
-  }
-
-  public void setFavoriteFruit(String favoriteFruit) { 
-    this.favoriteFruit = favoriteFruit; 
-  }
+	public void setFavoriteFruit(String favoriteFruit) {
+		this.favoriteFruit = favoriteFruit;
+	}
 
 }

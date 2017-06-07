@@ -289,4 +289,9 @@ public class CustomPojoRepositoryImpl<T, ID extends Serializable>
             throw new MarkLogicInternalException(e);
         }
     }
+
+	@Override
+	public ID getId(T entity) {
+		return pojoRepository.getId(entity);
+	}
 }
