@@ -4,19 +4,19 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.impl.PojoRepositoryImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.mycompany.app.custompojodao.CustomPojoRepositoryImpl;
 import com.mycompany.app.custompojodao.DAOFactory;
 import com.mycompany.app.data.RandomDocGenerator;
 import com.mycompany.app.pojos.Person;
@@ -51,7 +51,7 @@ public class App {
 		final JobTicket ticket = manager.startJob(writer);
 	    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 	    metadataHandle = metadataHandle.withCollections(Person.class.getName());
-		PojoRepositoryImpl<Person, Serializable> pojoRepo = (PojoRepositoryImpl<Person, Serializable>)daoFactory.getPojoRepository(Person.class);
+	    CustomPojoRepositoryImpl<Person, Serializable> pojoRepo = (CustomPojoRepositoryImpl<Person, Serializable>)daoFactory.getPojoRepository(Person.class);
 		logger.log(Level.INFO, "Writing " + numOfDocsToCreate + " Documents");
 		for (int i = 0; i < numOfDocsToCreate; i++) {
 			try {
@@ -86,15 +86,15 @@ public class App {
 		  .onUrisReady(new ExportListener()
 			        .onDocumentReady(doc-> {
 			        	 JacksonDatabindHandle<Person> handle = new JacksonDatabindHandle<>(Person.class);
-			        	 handle.getMapper().enableDefaultTyping(
-			        	      ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
+			        	 handle.getMapper()
+			        		.enable(SerializationFeature.WRAP_ROOT_VALUE)
+							.enable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 			        	doc.getContent(handle);
 			        	Person personInstance = handle.get();
 			        	logger.log(Level.INFO, "Found Person: " + personInstance.getSurname() + ", " + personInstance.getGivenName());
 			        }))
 		  .onQueryFailure(throwable -> throwable.printStackTrace());
-		final JobTicket readTicket = manager.startJob(batcher);
+		manager.startJob(batcher);
 		batcher.awaitCompletion();
-		manager.stopJob(readTicket);
 	}
 }
