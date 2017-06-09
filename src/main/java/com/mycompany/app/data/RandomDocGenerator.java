@@ -42,12 +42,9 @@ public class RandomDocGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		randomLongByType.put("numDoors", new ArrayList<Long>(Arrays.asList(new Long(2), new Long(4))));
-		randomLongByType.put("numCylinders",
-				new ArrayList<Long>(Arrays.asList(new Long(2), new Long(4), new Long(6), new Long(8))));
 	}
 
-	public static <T> T newRandomClass(Class<T> classy) throws InstantiationException, IllegalAccessException,
+	public static <T> T newComplexRandomClass(Class<T> classy) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchFieldException, SecurityException {
 		T instance = classy.newInstance();
 		for (Method method : classy.getDeclaredMethods()) {
@@ -74,6 +71,20 @@ public class RandomDocGenerator {
 			}
 		}
 		return instance;
+	}
+
+	public static <T> T newRandomClass(Class<T> classy) throws InstantiationException, IllegalAccessException, InstantiationException, IllegalAccessException,
+	IllegalArgumentException, InvocationTargetException, NoSuchFieldException, SecurityException {
+		return newRandomClass(classy, "");
+	}
+
+	public static <T> T newRandomClass(Class<T> classy, String fieldName) throws InstantiationException, IllegalAccessException, InstantiationException, IllegalAccessException,
+	IllegalArgumentException, InvocationTargetException, NoSuchFieldException, SecurityException {
+		T randomVal = randomValueFromSimpleClass(classy, fieldName);
+		if (randomVal == null) {
+			randomVal = newComplexRandomClass(classy);
+		}
+		return randomVal;
 	}
 
 	private static void setupDataSelectionLists() throws IOException {
@@ -127,13 +138,32 @@ public class RandomDocGenerator {
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, SecurityException {
 		String simpleName = classy.getSimpleName();
+		String fieldName = associatedField.getName();
+		T randomVal = null;
+		switch (simpleName) {
+		case "List":
+			@SuppressWarnings("rawtypes")
+			Class subClass = getTypeClass(associatedField);
+			if (subClass != null && !subClass.getName().equals(Object.class.getName())) {
+				randomVal = classy.cast(getListOfRandomClasses(subClass, fieldName));
+			}
+			break;
+		default:
+			randomVal = randomValueFromSimpleClass(classy, associatedField.getName());
+			break;
+		}
+		return randomVal;
+	}
+
+	private static <T> T randomValueFromSimpleClass(Class<T> classy, String fieldName) {
+		String simpleName = classy.getSimpleName();
 		T randomVal = null;
 		switch (simpleName) {
 		case "Double":
 			randomVal = classy.cast(new Double(Math.round(ThreadLocalRandom.current().nextDouble() * 10000) / 100.0));
 			break;
 		case "Long":
-			randomVal = classy.cast(getSemiRandomLong(associatedField.getName()));
+			randomVal = classy.cast(getSemiRandomLong(fieldName));
 			break;
 		case "Integer":
 			randomVal = classy.cast(new Integer(ThreadLocalRandom.current().nextInt()));
@@ -142,14 +172,7 @@ public class RandomDocGenerator {
 			randomVal = classy.cast(new Boolean(ThreadLocalRandom.current().nextInt(2) == 1));
 			break;
 		case "String":
-			randomVal = classy.cast(getSemiRandomString(associatedField.getName()));
-			break;
-		case "List":
-			@SuppressWarnings("rawtypes")
-			Class subClass = getTypeClass(associatedField);
-			if (subClass != null && !subClass.getName().equals(Object.class.getName())) {
-				randomVal = classy.cast(getListOfRandomClasses(subClass));
-			}
+			randomVal = classy.cast(getSemiRandomString(fieldName));
 			break;
 		case "GregorianCalendar":
 			GregorianCalendar gc = new GregorianCalendar();
@@ -160,23 +183,22 @@ public class RandomDocGenerator {
 			randomVal = classy.cast(gc);
 			break;
 		default:
-			System.out.println(simpleName);
 			break;
 		}
 		return randomVal;
 	}
-
+	
 	private static int randBetween(int start, int end) {
 		return start + (int) Math.round(Math.random() * (end - start));
 	}
 
-	private static <T> List<T> getListOfRandomClasses(Class<T> classy)
+	private static <T> List<T> getListOfRandomClasses(Class<T> classy, String fieldName)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, SecurityException {
 		int size = ThreadLocalRandom.current().nextInt(4) + 1;
 		List<T> subClasses = new ArrayList<T>();
 		for (int i = 0; i < size; i++) {
-			subClasses.add(newRandomClass(classy));
+			subClasses.add(newRandomClass(classy, fieldName));
 		}
 		return subClasses;
 	}
@@ -188,10 +210,10 @@ public class RandomDocGenerator {
 			return selectionList.get(selectionIndex);
 		} else if (descriptionRegex.matcher(fieldName).find()) {
 			return loremIpsum.getWords(ThreadLocalRandom.current().nextInt(3) + 2) + " "
-					+ randomStringValueByType("insuranceTerms") + " "
+					+ randomStringValueByType("tags") + " "
 					+ loremIpsum.getWords(ThreadLocalRandom.current().nextInt(3) + 2,
 							ThreadLocalRandom.current().nextInt(3) + 10)
-					+ " " + randomStringValueByType("insuranceTerms");
+					+ " " + randomStringValueByType("tags");
 		} else {
 			return loremIpsum.getWords(ThreadLocalRandom.current().nextInt(3) + 2);
 		}

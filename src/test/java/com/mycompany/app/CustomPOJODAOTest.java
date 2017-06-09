@@ -34,7 +34,7 @@ public class CustomPOJODAOTest extends TestCase {
 
 		pojoRepo.write(instance1);
 
-		Person instance2 = pojoRepo.read(instance1._id);
+		Person instance2 = pojoRepo.read(instance1.get_id());
 
 		assertNotNull(instance2);
 

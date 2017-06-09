@@ -11,9 +11,11 @@ import com.marklogic.client.pojo.annotation.Id;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonRootName("person")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Person {
-	@JsonProperty("_id")
+public class Person extends EnvelopeContent {
+	@JsonProperty("contentType")
+	public String contentType = "person";
 	@Id
+	@JsonProperty("_id")
 	public String _id;
 	@JsonProperty("index")
 	public Double index;
@@ -235,4 +237,10 @@ public class Person {
 		this.favoriteFruit = favoriteFruit;
 	}
 
+	public String getContentType() {
+		return contentType;
+	}
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
 }

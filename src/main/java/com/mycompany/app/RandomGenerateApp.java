@@ -4,16 +4,18 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.mycompany.app.custompojodao.CustomPojoRepositoryImpl;
@@ -21,31 +23,32 @@ import com.mycompany.app.custompojodao.DAOFactory;
 import com.mycompany.app.data.RandomDocGenerator;
 import com.mycompany.app.pojos.Person;
 
-public class App {
+public class RandomGenerateApp {
 	private static DAOFactory daoFactory = new DAOFactory();
-	private static final Logger logger = Logger.getLogger(App.class.getName());
+	private static final Logger logger = Logger.getLogger(RandomGenerateApp.class.getName());
 	// DataMovementManager is the core class for doing asynchronous jobs against
 	// a MarkLogic cluster.
 	final static DatabaseClient client = Configuration.mlClient();
 	final static DataMovementManager manager = client.newDataMovementManager();
+	private static ServerTransform transform = new ServerTransform("customEnvelope");
 
 	// In this case, we’re writing data in batches
-	final static WriteBatcher writer = manager.newWriteBatcher().withJobName("Test Job")
+	final static WriteBatcher writer = manager.newWriteBatcher().withTransform(transform).withJobName("Test Job")
 			// Configure parallelization and memory tradeoffs
 			.withBatchSize(50)
 			// Configure listeners for asynchronous life-cycle events
 			// Success:
 			.onBatchSuccess(batch -> {
-				App.logger.log(Level.INFO,  batch.getTimestamp().getTime() +
+				RandomGenerateApp.logger.log(Level.INFO,  batch.getTimestamp().getTime() +
 	                       " documents written: " +
 	                       batch.getJobWritesSoFar());
 			})
 			// Failure:
 			.onBatchFailure((batch, throwable) -> {
-				App.logger.log(Level.SEVERE, "Error Writing Batch", throwable);
+				RandomGenerateApp.logger.log(Level.SEVERE, "Error Writing Batch", throwable);
 			});
 
-	final static int numOfDocsToCreate = 10000;
+	final static int numOfDocsToCreate = 1000;
 	
 	public static void main(String[] args) {
 		final JobTicket ticket = manager.startJob(writer);
@@ -60,7 +63,7 @@ public class App {
 			    contentHandle.setMapper(pojoRepo.getObjectMapper());
 			    writer.addAs(pojoRepo.getDocumentUri(personInstance), metadataHandle, contentHandle);
 			} catch (Exception e) {
-				App.logger.log(Level.SEVERE, "Error adding POJO to Batch Writer", e);
+				RandomGenerateApp.logger.log(Level.SEVERE, "Error adding POJO to Batch Writer", e);
 			}
 
 		}
@@ -85,15 +88,20 @@ public class App {
 		  // a batch of URIs. 
 		  .onUrisReady(new ExportListener()
 			        .onDocumentReady(doc-> {
-			        	 JacksonDatabindHandle<Person> handle = new JacksonDatabindHandle<>(Person.class);
-			        	 handle.getMapper()
-			        		.enable(SerializationFeature.WRAP_ROOT_VALUE)
-							.enable(DeserializationFeature.UNWRAP_ROOT_VALUE);
+			        	ObjectMapper mapper = new ObjectMapper();
+			        	StringHandle handle = new StringHandle();
 			        	doc.getContent(handle);
-			        	Person personInstance = handle.get();
+			        	JsonNode node = null;
+			        	Person personInstance = null;
+						try {
+							node = mapper.readTree(handle.get());
+							personInstance = mapper.treeToValue(node.at("/envelope/content/person"), Person.class);
+						} catch (Exception e) {
+							logger.log(Level.SEVERE, "Error parsing returned JSON", e);
+						}
 			        	logger.log(Level.INFO, "Found Person: " + personInstance.getSurname() + ", " + personInstance.getGivenName());
 			        }))
-		  .onQueryFailure(throwable -> throwable.printStackTrace());
+		  .onQueryFailure(throwable -> logger.log(Level.SEVERE, "Error on query", throwable));
 		manager.startJob(batcher);
 		batcher.awaitCompletion();
 	}
