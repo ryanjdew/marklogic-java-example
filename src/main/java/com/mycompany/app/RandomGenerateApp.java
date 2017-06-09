@@ -4,31 +4,25 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.mycompany.app.custompojodao.CustomPojoRepositoryImpl;
 import com.mycompany.app.custompojodao.DAOFactory;
 import com.mycompany.app.data.RandomDocGenerator;
-import com.mycompany.app.pojos.Envelope;
 import com.mycompany.app.pojos.Person;
 
 public class RandomGenerateApp {
 	private static DAOFactory daoFactory = new DAOFactory();
 	private static final Logger logger = Logger.getLogger(RandomGenerateApp.class.getName());
+
+	final static DatabaseClient client = Configuration.mlClient();
 	// DataMovementManager is the core class for doing asynchronous jobs against
 	// a MarkLogic cluster.
-	final static DatabaseClient client = Configuration.mlClient();
 	final static DataMovementManager manager = client.newDataMovementManager();
 	private static ServerTransform transform = new ServerTransform("customEnvelope");
 
@@ -72,38 +66,5 @@ public class RandomGenerateApp {
 		writer.flushAndWait();
 		// Finalize the job by its unique handle generated in startJob() above.
 		manager.stopJob(ticket);
-		
-		final StructuredQueryBuilder sqb = new StructuredQueryBuilder();
-		final StructuredQueryDefinition query = sqb.and(
-		  sqb.collection(Person.class.getName())
-		);
-		@SuppressWarnings("unchecked")
-		final QueryBatcher batcher = manager
-		  .newQueryBatcher(query)
-		  .withBatchSize(100)
-		  // Run the query at a consistent point in time.
-		  // This means that the matched documents will be the same 
-		  // across batches, even if the underlying data is changing.
-		  .withConsistentSnapshot()
-		  // Included QueryBatchListener implementation that deletes
-		  // a batch of URIs. 
-		  .onUrisReady(new ExportListener()
-			        .onDocumentReady(doc-> {
-			        	Envelope<Person> personInstance = new Envelope<Person>();
-			        	JacksonDatabindHandle<Envelope<Person>> handle = new JacksonDatabindHandle<Envelope<Person>>((Class<Envelope<Person>>) personInstance.getClass());
-			            handle.getMapper()
-			            		.enable(SerializationFeature.WRAP_ROOT_VALUE)
-			    				.enable(DeserializationFeature.UNWRAP_ROOT_VALUE);
-			            doc.getContent(handle);
-						try {
-							personInstance = handle.get();
-						} catch (Exception e) {
-							logger.log(Level.SEVERE, "Error parsing returned JSON", e);
-						}
-			        	logger.log(Level.INFO, "Found Person: " + personInstance.getContent().getSurname() + ", " + personInstance.getContent().getGivenName() + " ingested by " + personInstance.getMeta().getIngestUser());
-			        }))
-		  .onQueryFailure(throwable -> logger.log(Level.SEVERE, "Error on query", throwable));
-		manager.startJob(batcher);
-		batcher.awaitCompletion();
 	}
 }
