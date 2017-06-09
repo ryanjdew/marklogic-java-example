@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportListener;
@@ -15,12 +15,12 @@ import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.mycompany.app.custompojodao.CustomPojoRepositoryImpl;
 import com.mycompany.app.custompojodao.DAOFactory;
 import com.mycompany.app.data.RandomDocGenerator;
+import com.mycompany.app.pojos.Envelope;
 import com.mycompany.app.pojos.Person;
 
 public class RandomGenerateApp {
@@ -77,6 +77,7 @@ public class RandomGenerateApp {
 		final StructuredQueryDefinition query = sqb.and(
 		  sqb.collection(Person.class.getName())
 		);
+		@SuppressWarnings("unchecked")
 		final QueryBatcher batcher = manager
 		  .newQueryBatcher(query)
 		  .withBatchSize(100)
@@ -88,18 +89,18 @@ public class RandomGenerateApp {
 		  // a batch of URIs. 
 		  .onUrisReady(new ExportListener()
 			        .onDocumentReady(doc-> {
-			        	ObjectMapper mapper = new ObjectMapper();
-			        	StringHandle handle = new StringHandle();
-			        	doc.getContent(handle);
-			        	JsonNode node = null;
-			        	Person personInstance = null;
+			        	Envelope<Person> personInstance = new Envelope<Person>();
+			        	JacksonDatabindHandle<Envelope<Person>> handle = new JacksonDatabindHandle<Envelope<Person>>((Class<Envelope<Person>>) personInstance.getClass());
+			            handle.getMapper()
+			            		.enable(SerializationFeature.WRAP_ROOT_VALUE)
+			    				.enable(DeserializationFeature.UNWRAP_ROOT_VALUE);
+			            doc.getContent(handle);
 						try {
-							node = mapper.readTree(handle.get());
-							personInstance = mapper.treeToValue(node.at("/envelope/content/person"), Person.class);
+							personInstance = handle.get();
 						} catch (Exception e) {
 							logger.log(Level.SEVERE, "Error parsing returned JSON", e);
 						}
-			        	logger.log(Level.INFO, "Found Person: " + personInstance.getSurname() + ", " + personInstance.getGivenName());
+			        	logger.log(Level.INFO, "Found Person: " + personInstance.getContent().getSurname() + ", " + personInstance.getContent().getGivenName() + " ingested by " + personInstance.getMeta().getIngestUser());
 			        }))
 		  .onQueryFailure(throwable -> logger.log(Level.SEVERE, "Error on query", throwable));
 		manager.startJob(batcher);

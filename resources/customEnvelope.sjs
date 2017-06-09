@@ -7,7 +7,7 @@ function validate(contentObj) {
 function transform(context, params, content) {
 	var contentObj = content.toObject();
 	var type = Object.keys(contentObj)[0];
-	contentObj['@type'] = type;
+	contentObj[type]['@type'] = type;
 	var newContent = {
 		"envelope": {
 			"meta": {
@@ -15,7 +15,7 @@ function transform(context, params, content) {
 				"ingestUser": xdmp.getCurrentUser(),
 				"validation": validate(contentObj)
 			},
-			"content": contentObj
+			"content": contentObj[type]
 		}
 	};
 	var nb = new NodeBuilder();
