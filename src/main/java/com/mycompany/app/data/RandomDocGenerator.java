@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,15 @@ public class RandomDocGenerator {
 
 	public static <T> T newComplexRandomClass(Class<T> classy) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchFieldException, SecurityException {
-		T instance = classy.newInstance();
+		T instance = null;
+		if (classy.isEnum()) {
+			T[] constants = classy.getEnumConstants();
+			int indexNum = ThreadLocalRandom.current().nextInt(constants.length);
+			instance = constants[indexNum];
+		} else {
+			instance = classy.newInstance();
+		}
+		Field[] fields = classy.getDeclaredFields();
 		for (Method method : classy.getDeclaredMethods()) {
 			String methodName = method.getName();
 			if (methodName.startsWith("set")) {
@@ -56,8 +65,19 @@ public class RandomDocGenerator {
 				} catch (NoSuchMethodException e) {
 
 				}
-				Field field = classy
-						.getDeclaredField(methodName.substring(3, 4).toLowerCase() + methodName.substring(4));
+				String fieldName = methodName.substring(3).toLowerCase();
+				String regex = "/" + fieldName + "/i";
+				Field field = null;
+				Field[] matchingFields = Arrays
+						.stream(fields)
+						.filter(
+								f -> 
+								Pattern.matches(regex, f.getName())
+						)
+						.toArray(Field[]::new);
+				if (matchingFields.length > 0) {
+					field = matchingFields[0];
+				}
 				if (method.getAnnotation(Id.class) != null
 						|| (getMethod != null && getMethod.isAnnotationPresent(Id.class))
 						|| (field != null && field.isAnnotationPresent(Id.class))) {
@@ -66,6 +86,9 @@ public class RandomDocGenerator {
 					Class<?> argClass = method.getParameterTypes()[0];
 					Field assocField = getFieldFromMethod(classy, method);
 					Object randomValue = randomValueFromClass(argClass, assocField);
+					if (randomValue == null) {
+						randomValue = RandomDocGenerator.newComplexRandomClass(argClass);
+					}
 					method.invoke(instance, randomValue);
 				}
 			}
@@ -140,17 +163,23 @@ public class RandomDocGenerator {
 		String simpleName = classy.getSimpleName();
 		String fieldName = associatedField.getName();
 		T randomVal = null;
-		switch (simpleName) {
-		case "List":
-			@SuppressWarnings("rawtypes")
-			Class subClass = getTypeClass(associatedField);
-			if (subClass != null && !subClass.getName().equals(Object.class.getName())) {
-				randomVal = classy.cast(getListOfRandomClasses(subClass, fieldName));
+		@SuppressWarnings("rawtypes")
+		Class subClass = getTypeClass(associatedField);
+		if(subClass instanceof Class && ((Class<?>)subClass).isEnum()) {
+			Object[] values = subClass.getEnumConstants();
+			int selectionIndex = ThreadLocalRandom.current().nextInt(values.length);
+			randomVal = (T) values[selectionIndex];
+		} else {
+			switch (simpleName) {
+			case "List":
+				if (subClass != null && !subClass.getName().equals(Object.class.getName())) {
+					randomVal = classy.cast(getListOfRandomClasses(subClass, fieldName));
+				}
+				break;
+			default:
+				randomVal = randomValueFromSimpleClass(classy, associatedField.getName());
+				break;
 			}
-			break;
-		default:
-			randomVal = randomValueFromSimpleClass(classy, associatedField.getName());
-			break;
 		}
 		return randomVal;
 	}
