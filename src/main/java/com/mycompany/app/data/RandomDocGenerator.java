@@ -11,7 +11,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +52,11 @@ public class RandomDocGenerator {
 			int indexNum = ThreadLocalRandom.current().nextInt(constants.length);
 			instance = constants[indexNum];
 		} else {
-			instance = classy.newInstance();
+			try {
+				instance = classy.getDeclaredConstructor().newInstance();
+			} catch (NoSuchMethodException|SecurityException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		Field[] fields = classy.getDeclaredFields();
 		for (Method method : classy.getDeclaredMethods()) {
@@ -66,13 +69,12 @@ public class RandomDocGenerator {
 
 				}
 				String fieldName = methodName.substring(3).toLowerCase();
-				String regex = "/" + fieldName + "/i";
 				Field field = null;
 				Field[] matchingFields = Arrays
 						.stream(fields)
 						.filter(
 								f -> 
-								Pattern.matches(regex, f.getName())
+								fieldName.equalsIgnoreCase(f.getName())
 						)
 						.toArray(Field[]::new);
 				if (matchingFields.length > 0) {
@@ -189,16 +191,16 @@ public class RandomDocGenerator {
 		T randomVal = null;
 		switch (simpleName) {
 		case "Double":
-			randomVal = classy.cast(new Double(Math.round(ThreadLocalRandom.current().nextDouble() * 10000) / 100.0));
+			randomVal = classy.cast((double) (Math.round(ThreadLocalRandom.current().nextDouble() * 10000) / 100.0));
 			break;
 		case "Long":
 			randomVal = classy.cast(getSemiRandomLong(fieldName));
 			break;
 		case "Integer":
-			randomVal = classy.cast(new Integer(ThreadLocalRandom.current().nextInt()));
+			randomVal = classy.cast((int) (ThreadLocalRandom.current().nextInt()));
 			break;
 		case "Boolean":
-			randomVal = classy.cast(new Boolean(ThreadLocalRandom.current().nextInt(2) == 1));
+			randomVal = classy.cast((boolean) (ThreadLocalRandom.current().nextInt(2) == 1));
 			break;
 		case "String":
 			randomVal = classy.cast(getSemiRandomString(fieldName));
@@ -253,9 +255,9 @@ public class RandomDocGenerator {
 			List<Long> longList = randomLongByType.get(fieldName);
 			return longList.get(ThreadLocalRandom.current().nextInt(longList.size()));
 		} else if (yearRegex.matcher(fieldName).find()) {
-			return new Long(randBetween(1970, 2015));
+			return (long) randBetween(1970, 2015);
 		} else {
-			return new Long(ThreadLocalRandom.current().nextLong(300));
+			return ThreadLocalRandom.current().nextLong(300);
 		}
 	}
 

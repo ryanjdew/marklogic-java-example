@@ -276,10 +276,10 @@ public class CustomPojoRepositoryImpl<T, ID extends Serializable>
     
     @Override
     public String getDocumentUri(T entity) {
-        return pojoRepository.getDocumentUri(entity);
+        return this.createUri(pojoRepository.getId(entity));
     }
 
-    private String createUri(ID id) {
+    protected String createUri(ID id) {
         if ( id == null ) {
             throw new IllegalStateException("id cannot be null");
         }

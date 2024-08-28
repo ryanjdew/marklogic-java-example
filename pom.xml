@@ -8,25 +8,30 @@
 	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.11.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.marklogic</groupId>
-			<artifactId>java-client-api</artifactId>
-			<version>4.0.1</version>
+			<artifactId>marklogic-client-api</artifactId>
+			<version>7.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.2.4</version>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.17.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.2</version>
+			<version>1.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.sven-jacobs</groupId>

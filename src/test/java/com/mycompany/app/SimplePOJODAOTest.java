@@ -1,5 +1,8 @@
 package com.mycompany.app;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,19 +10,17 @@ import java.lang.reflect.Method;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.marklogic.client.pojo.PojoRepository;
 import com.mycompany.app.data.RandomDocGenerator;
 import com.mycompany.app.pojos.Person;
 import com.mycompany.app.simplepojodao.DAOFactory;
 
-import junit.framework.TestCase;
-
 /**
  * Unit test for simple App.
  */
-public class SimplePOJODAOTest extends TestCase {
+public class SimplePOJODAOTest {
 	private DAOFactory daoFactory = new DAOFactory();
 
 	@Test
